@@ -9,7 +9,6 @@ use Drupal\file\Entity\File;
 use Drupal\file\Plugin\Field\FieldType\FileFieldItemList;
 use Drupal\media\Entity\Media;
 use Drupal\views\Plugin\views\row\RssFields;
-use function strtolower;
 
 /**
  * Renders an iTunes RSS item based on fields.
@@ -61,7 +60,7 @@ class ItunesRssFields extends RssFields {
       'image',
       'isClosedCaptioned',
       'order',
-      'language'
+      'language',
     ];
 
     return $fields;
