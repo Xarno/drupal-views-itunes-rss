@@ -4,7 +4,8 @@
  * Theme override for feed displays that use the RSS style.
  *
  * Available variables:
- * - link: The link to the feed (the view path).
+ * - link: The link to the feed (the view path). Not necessarily the same as the Podcast frontpage.
+ * - podcastFrontpage: Page which contains the podcast for users
  * - namespaces: The XML namespaces (added automatically).
  * - title: The title of the feed (as set in the view).
  * - description: The feed description (from feed settings).
@@ -21,16 +22,12 @@
 <rss version="2.0" xml:base="{{ link }}"{{ namespaces }}>
   <channel>
     <title>{{ title }}</title>
-    <link>{{ link }}</link>
+    <link>{{ podcastFrontpage }}</link>
     <atom:link href="{{ link }}" rel="self" type="application/rss+xml"/>
-    <description>{{ description }}</description>
+    <description><![CDATA[{{ description }}]]></description>
     <language>{{ langcode }}</language>
     {% if image_url %}
-      <image>
-        <url>{{ image_url }}</url>
-        <title>{{ title }}</title>
-        <link>{{ link }}</link>
-      </image>
+      <itunes:image href="{{ image_url }}"></itunes:image>
     {% endif %}
     {% if itunes_category %}
       <itunes:category text="{{ itunes_category }}">
@@ -44,6 +41,9 @@
         <itunes:name>{{ itunes_name }}</itunes:name>
         <itunes:email>{{ itunes_email }}</itunes:email>
       </itunes:owner>
+    {% endif %}
+    {% if itunes_author %}
+      <itunes:author>{{ itunes_author }}</itunes:author>
     {% endif %}
     <itunes:explicit>{{ itunes_explicit }}</itunes:explicit>
     {{ channel_elements }}

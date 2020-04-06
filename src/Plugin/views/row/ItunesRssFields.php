@@ -2,9 +2,12 @@
 
 namespace Drupal\itunes_rss\Plugin\views\row;
 
+use Drupal\Core\Field\EntityReferenceFieldItemList;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Drupal\file\Plugin\Field\FieldType\FileFieldItemList;
+use Drupal\media\Entity\Media;
 use Drupal\views\Plugin\views\row\RssFields;
 use function strtolower;
 
@@ -27,6 +30,7 @@ class ItunesRssFields extends RssFields {
   protected function defineOptions() {
     $options = parent::defineOptions();
     $options['enclosure_field'] = ['default' => ''];
+
     foreach ($this->getItunesItemFields() as $field) {
       $options['itunes']['contains'][$this->getItunesFieldMachineName($field)] = ['default' => ''];
     }
@@ -57,6 +61,7 @@ class ItunesRssFields extends RssFields {
       'image',
       'isClosedCaptioned',
       'order',
+      'language'
     ];
 
     return $fields;
@@ -82,11 +87,10 @@ class ItunesRssFields extends RssFields {
     $form['enclosure_field'] = [
       '#type' => 'select',
       '#title' => $this->t('Enclosure field'),
-      '#description' => $this->t('Describes a media object that is attached to the item. This must be a file field.'),
+      '#description' => $this->t('Describes a media object that is attached to the item. This must be a file field or a media entity reference.'),
       '#options' => $view_fields_labels,
       '#default_value' => $this->options['enclosure_field'],
     ];
-
     $form['itunes'] = [
       '#type' => 'details',
       '#title' => $this->t('iTunes fields'),
@@ -122,10 +126,19 @@ class ItunesRssFields extends RssFields {
     if ($this->options['enclosure_field']) {
       $field_name = $this->options['enclosure_field'];
       $entity = $this->view->result[$row_index]->_entity;
-      $enclosure = $entity->$field_name;
-      if ($enclosure instanceof FileFieldItemList) {
-        $value = $enclosure->getValue();
+
+      if ($entity->$field_name instanceof EntityReferenceFieldItemList) {
+        /** @var \Drupal\media\Entity\Media $media */
+        $media = $entity->$field_name->entity;
+        $file = File::load($media->getSource()->getSourceFieldValue($media));
+      }
+
+      if ($entity->$field_name instanceof FileFieldItemList) {
+        $value = $entity->$field_name->getValue();
         $file = File::load($value[0]['target_id']);
+      }
+
+      if (isset($file)) {
         $item->elements[] = [
           'key' => 'enclosure',
           'attributes' => [
@@ -146,10 +159,24 @@ class ItunesRssFields extends RssFields {
     foreach ($fields as $field) {
       if ($this->getField($row_index, $this->options['itunes'][$this->getItunesFieldMachineName($field)]) !== '') {
         $value = $this->getField($row_index, $this->options['itunes'][$this->getItunesFieldMachineName($field)]);
-        $item->elements[] = [
-          'key' => 'itunes:' . $field,
-          'value' => $value,
-        ];
+
+        if ($field === 'image') {
+          /** @var \Drupal\media\Entity\Media $media_image */
+          $media_image = Media::load((string) $value);
+          $fid = $media_image->getSource()->getSourceFieldValue($media_image);
+          $file = File::load($fid);
+
+          $item->elements[] = [
+            'key' => 'itunes:' . $field,
+            'attributes' => ['href' => $file->url()],
+          ];
+        }
+        else {
+          $item->elements[] = [
+            'key' => 'itunes:' . $field,
+            'value' => $value,
+          ];
+        }
       }
     }
 

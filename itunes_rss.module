@@ -39,6 +39,8 @@ function template_preprocess_views_view_itunes_rss(array &$variables) {
   $view = $variables['view'];
   $style = $view->style_plugin;
   $variables['image_url'] = $style->getImage();
+  $variables['podcastFrontpage'] = $style->options['podcastFrontpage'];
+  $variables['itunes_author'] = $style->options['author'];
   $variables['itunes_category'] = $style->options['category'];
   $variables['itunes_explicit'] = $style->options['explicit'] ? 'yes' : 'no';
   $variables['itunes_name'] = $style->options['name'];
