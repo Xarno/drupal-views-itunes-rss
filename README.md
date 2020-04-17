@@ -16,6 +16,6 @@ This module provides a new Views formatter for rendering Views RSS feeds as iTun
 You may customize the output using Drupal's core theming system. The following twig templates may be overridden:
 
 * views-view-itunes-rss.html.twig
-* views-view-row-rss.html.twig
+* views-view-row-rss.html.twig -> Does not work with 8.8.x because of Views Bug. https://drupal.stackexchange.com/questions/249854/i-dont-see-views-theme-suggestions/257245#257245
 
 The following preprocessor may be overridden: `template_preprocess_views_view_itunes_rss()`.
